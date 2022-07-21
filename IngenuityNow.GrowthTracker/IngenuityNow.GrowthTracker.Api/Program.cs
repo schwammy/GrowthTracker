@@ -5,6 +5,7 @@ using IngenuityNow.Common.Data;
 using IngenuityNow.Common.Data.DataService;
 using Microsoft.EntityFrameworkCore;
 using IngenuityNow.GrowthTracker.Api;
+using GrowthTracker.BackEnd.Mini.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,7 +20,14 @@ builder.Services.AddScoped<ICompetencyOrchestrator, CompetencyOrchestrator>();
 builder.Services.AddScoped<IDataService<Competency>, DataService<Competency>>();
 builder.Services.AddScoped<IGenericRepository<Competency>, GenericRepository<Competency, GrowthTrackerContext>>();
 
+builder.Services.AddScoped<ITeamMemberOrchestrator, TeamMemberOrchestrator>();
+builder.Services.AddScoped<IDataService<TeamMember>, DataService<TeamMember>>();
+builder.Services.AddScoped<IGenericRepository<TeamMember>, GenericRepository<TeamMember, GrowthTrackerContext>>();
 
+builder.Services.AddScoped<IDataService<TeamMemberCompetency>, DataService<TeamMemberCompetency>>();
+builder.Services.AddScoped<IGenericRepository<TeamMemberCompetency>, GenericRepository<TeamMemberCompetency, GrowthTrackerContext>>();
+
+builder.Services.AddScoped<ITeamMemberCompetencyDataService, TeamMemberCompetencyDataService>();
 
 var app = builder.Build();
 
@@ -32,34 +40,34 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-
-//app.MapGet("/weatherforecast", async (ICompetencyOrchestrator orchestrator) =>
-//{
-//    var c = new AddCompetencyDto("Writing Code", "Technical Skills", "Quality & testing");
-//    c.Level1Description = "Writes code with testability, readability, edge cases, and errors in mind.";
-//    c.Level2Description = "Consistently writes functions that are easily testable, easily understood by other developers, and accounts for edge cases and errors. Uses docstrings effectively.";
-//    c.Level3Description = "Consistently writes production-ready code that is easily testable, easily understood by other developers, and accounts for edge cases and errors. Understands when it is appropriate to leave comments, but biases towards self-documenting code.";
-//    c.Level4Description = "see E3";
-//    c.Level5Description = "see E3";
-//    c.Level6Description = "see E3";
-//    var result = await orchestrator.AddCompetencyAsync(c);
-//    return result.ToHttpResult();
-//})
-//.WithName("GetWeatherForecast");
-
-app.MapPost("/loadCompetencies", async (ICompetencyOrchestrator orchestrator) =>
+app.MapPost("/addTeamMember", async (AddTeamMemberDto teamMember, ITeamMemberOrchestrator orchestrator) =>
 {
-    var c = new AddCompetencyDto("Writing Code", "Technical Skills", "Quality & testing");
-    c.Level1Description = "Writes code with testability, readability, edge cases, and errors in mind.";
-    c.Level2Description = "Consistently writes functions that are easily testable, easily understood by other developers, and accounts for edge cases and errors. Uses docstrings effectively.";
-    c.Level3Description = "Consistently writes production-ready code that is easily testable, easily understood by other developers, and accounts for edge cases and errors. Understands when it is appropriate to leave comments, but biases towards self-documenting code.";
-    c.Level4Description = "see E3";
-    c.Level5Description = "see E3";
-    c.Level6Description = "see E3";
-    var result = await orchestrator.AddCompetencyAsync(c);
+    var result = await orchestrator.AddTeamMemberAsync(teamMember);
     return result.ToHttpResult();
 })
-.WithName("LoadCompetencies");
+.WithName("AddTeamMember");
+
+app.MapPost("/setTeamMemberCompetencyLevel", async (SetTeamMemberCompetencyLevelDto level, ITeamMemberOrchestrator orchestrator) =>
+{
+    var result = await orchestrator.SetTeamMemberCompetencyLevel(level);
+    return result.ToHttpResult();
+})
+.WithName("SetTeamMemberCompetencyLevel");
+
+app.MapGet("/getCompetenciesForTeamMember", async (int teamMemberId, ITeamMemberOrchestrator orchestrator) =>
+{
+    var result = await orchestrator.GetCompetenciesForTeamMember(teamMemberId);
+    return result.ToHttpResult();
+})
+.WithName("GetCompetenciesForTeamMember");
+
+
+app.MapPost("/addCompetency", async (AddCompetencyDto competency, ICompetencyOrchestrator orchestrator) =>
+{
+    var result = await orchestrator.AddCompetencyAsync(competency);
+    return result.ToHttpResult();
+})
+.WithName("AddCompetency");
 
 app.MapDelete("/clearCompetencies", async (ICompetencyOrchestrator orchestrator) =>
 {
