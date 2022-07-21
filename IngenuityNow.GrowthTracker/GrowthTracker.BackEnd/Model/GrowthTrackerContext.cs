@@ -19,6 +19,7 @@ public class GrowthTrackerContext : DbContext, IGrowthTrackerContext
     public DbSet<TeamMember>? TeamMembers { get; set; }
     public DbSet<Competency>? Competencies { get; set; }
     public DbSet<TeamMemberCompetency>? TeamMemberCompetencies { get; set; }
+    public DbSet<Role>? Roles { get; set; }
 
     public GrowthTrackerContext(DbContextOptions<GrowthTrackerContext> options) : base(options)
     {

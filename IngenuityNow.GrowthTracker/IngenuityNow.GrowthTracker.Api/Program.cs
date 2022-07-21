@@ -29,6 +29,10 @@ builder.Services.AddScoped<IGenericRepository<TeamMemberCompetency>, GenericRepo
 
 builder.Services.AddScoped<ITeamMemberCompetencyDataService, TeamMemberCompetencyDataService>();
 
+builder.Services.AddScoped<IRoleOrchestrator, RoleOrchestrator>();
+builder.Services.AddScoped<IDataService<Role>, DataService<Role>>();
+builder.Services.AddScoped<IGenericRepository<Role>, GenericRepository<Role, GrowthTrackerContext>>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -53,6 +57,14 @@ app.MapPost("/setTeamMemberCompetencyLevel", async (SetTeamMemberCompetencyLevel
     return result.ToHttpResult();
 })
 .WithName("SetTeamMemberCompetencyLevel");
+
+app.MapPost("/addRole", async (AddRoleDto role, IRoleOrchestrator orchestrator) =>
+{
+    var result = await orchestrator.AddRoleAsync(role);
+    return result.ToHttpResult();
+})
+.WithName("AddRole");
+
 
 app.MapGet("/getCompetenciesForTeamMember", async (int teamMemberId, ITeamMemberOrchestrator orchestrator) =>
 {
