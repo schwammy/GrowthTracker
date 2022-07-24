@@ -62,5 +62,6 @@
     <Build Include="TeamMembers.sql" />
     <Build Include="TeamMemberCompetencies.sql" />
     <Build Include="Roles.sql" />
+    <Build Include="RoleCompetencies.sql" />
   </ItemGroup>
 </Project>

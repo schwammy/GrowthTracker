@@ -6,6 +6,7 @@ using IngenuityNow.Common.Data.DataService;
 using Microsoft.EntityFrameworkCore;
 using IngenuityNow.GrowthTracker.Api;
 using GrowthTracker.BackEnd.Mini.Data;
+using GrowthTracker.BackEnd.Integration.Excel;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,6 +21,8 @@ builder.Services.AddScoped<ICompetencyOrchestrator, CompetencyOrchestrator>();
 builder.Services.AddScoped<IDataService<Competency>, DataService<Competency>>();
 builder.Services.AddScoped<IGenericRepository<Competency>, GenericRepository<Competency, GrowthTrackerContext>>();
 
+builder.Services.AddScoped<IExcelReader, ExcelReader>();
+
 builder.Services.AddScoped<ITeamMemberOrchestrator, TeamMemberOrchestrator>();
 builder.Services.AddScoped<IDataService<TeamMember>, DataService<TeamMember>>();
 builder.Services.AddScoped<IGenericRepository<TeamMember>, GenericRepository<TeamMember, GrowthTrackerContext>>();
@@ -31,7 +34,9 @@ builder.Services.AddScoped<ITeamMemberCompetencyDataService, TeamMemberCompetenc
 
 builder.Services.AddScoped<IRoleOrchestrator, RoleOrchestrator>();
 builder.Services.AddScoped<IDataService<Role>, DataService<Role>>();
+builder.Services.AddScoped<IDataService<RoleCompetency>, DataService<RoleCompetency>>();
 builder.Services.AddScoped<IGenericRepository<Role>, GenericRepository<Role, GrowthTrackerContext>>();
+builder.Services.AddScoped<IGenericRepository<RoleCompetency>, GenericRepository<RoleCompetency, GrowthTrackerContext>>();
 
 var app = builder.Build();
 
@@ -87,6 +92,20 @@ app.MapDelete("/clearCompetencies", async (ICompetencyOrchestrator orchestrator)
     return result.ToHttpResult();
 })
 .WithName("ClearCompetencies");
+
+app.MapPost("/addRoleCompetency", async (AddRoleCompetencyDto roleCompetency, IRoleOrchestrator orchestrator) => {
+    var result = await orchestrator.AddRoleCompetencyAsync(roleCompetency);
+    return result.ToHttpResult();
+})
+.WithName("AddRoleCompetency");
+
+app.MapPost("/loadFromRoleCompetenciesFromExcel", async (int roleId, IRoleOrchestrator orchestrator) => {
+    var result = await orchestrator.LoadAllCompetencies(roleId);
+    return result.ToHttpResult();
+})
+.WithName("loadFromRoleCompetenciesFromExcel");
+
+
 
 app.MapPost("/loadFromExcel", async (ICompetencyOrchestrator orchestrator) =>
 {

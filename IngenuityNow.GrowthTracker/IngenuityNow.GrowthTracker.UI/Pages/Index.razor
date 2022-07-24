@@ -1,0 +1,147 @@
+﻿@page "/"
+@using global::GrowthTracker.BackEnd.Dto
+@using global::GrowthTracker.BackEnd.Orchestrator
+@using IngenuityNow.GrowthTracker.UI.Data
+@inject ITeamMemberOrchestrator teamMemberOrchestrator
+
+<PageTitle>Index</PageTitle>
+
+<h1>Hello, world!</h1>
+
+Welcome to your new app.
+
+choose a team member
+
+<select id="teamMember" @onchange="SelectedTeamMemberChanged">
+    @foreach (var member in TeamMembers)
+    {
+        <option value="@member.Id">@member.Name</option>
+    }
+</select>
+
+@if (SelectedTeamMember != null)
+{
+    <div>Load Data For: @SelectedTeamMember.Name?</div>
+}
+
+<button type="submit" @onclick="LoadTeamMember">Submit</button>
+
+@*    <div class="row mt-3">
+        <div class="col-12">
+*@            <div class="container-fluid">
+                <table class="table" style="font-size: 10px;">
+                    <thead>
+                        <tr class="d-flex">
+                            <th class="sticky" scope="col">C Id</th>
+                            <th class="col-md-1 sticky" scope="col">KeyArea</th>
+                            <th class="col-md-1 sticky" scope="col">Attribute</th>
+                            <th class="col-md-1 sticky" scope="col">Title</th>
+                            <th class="col-md-1 sticky" scope="col">Level</th>
+                            <th scope="col">O</th>
+                            <th class="col-md-3" scope="col">@Evaluation.Level1Title</th>
+                            <th class="col-md-3" scope="col">@Evaluation.Level2Title</th>
+                            <th class="col-md-3" scope="col">@Evaluation.Level3Title</th>
+                            <th class="col-md-3" scope="col">@Evaluation.Level4Title</th>
+                            <th class="col-md-3" scope="col">@Evaluation.Level5Title</th>
+                            <th class="col-md-3" scope="col">@Evaluation.Level6Title</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var comp in Ctrs)
+                        {
+                            <tr @key=comp class="d-flex">
+                                <td class="sticky">@comp.CompetencyId</td>
+                                <td class="col-md-1 sticky">@comp.KeyArea</td>
+                                <td class="col-md-1 sticky">@comp.Attribute</td>
+                                <td class="col-md-1 sticky">@comp.Title</td>
+                                <td class="col-md-1 sticky"><input class="form-control" type="number" @bind=comp.Level /></td>
+                                <td >@comp.OrigLevel</td>
+                                <td class="col-md-3">@comp.Level1Description</td>
+                                <td class="col-md-3">@comp.Level2Description</td>
+                                <td class="col-md-3">@comp.Level3Description</td>
+                                <td class="col-md-3">@comp.Level4Description</td>
+                                <td class="col-md-3">@comp.Level5Description</td>
+                                <td class="col-md-3">@comp.Level6Description</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+@*        </div>
+    </div>*@
+
+<button type="submit" @onclick="SaveChangesAsync">SaveChanges</button>
+
+@code {
+
+    List<TeamMemberListItemDto> TeamMembers = new List<TeamMemberListItemDto>();
+    TeamMemberListItemDto SelectedTeamMember = null;
+    GetTeamMemberEvaluationDto Evaluation = new GetTeamMemberEvaluationDto();
+    List<CompetencyTableRow> Ctrs = new List<CompetencyTableRow>();
+
+    async Task SaveChangesAsync()
+    {
+        foreach (var comp in Ctrs.Where(c => c.IsDirty))
+        {
+            await teamMemberOrchestrator.SetTeamMemberCompetencyLevel(new SetTeamMemberCompetencyLevelDto
+                {
+                    AchievedDate = DateTime.Now,
+                    CompetencyId = comp.CompetencyId,
+                    EvaluatedById = 1,
+                    Level = comp.Level,
+                    TeamMemberId = Evaluation.TeamMemberId
+                });
+            comp.IsDirty = false;
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var teamMemberResults = await teamMemberOrchestrator.GetTeamMemberListItems();
+        TeamMembers = teamMemberResults.Values;
+        TeamMembers.Insert(0, new TeamMemberListItemDto(-1, "Please choose"));
+    }
+
+    void SelectedTeamMemberChanged(ChangeEventArgs e)
+    {
+        if (e.Value is not null)
+        {
+            SelectedTeamMember = TeamMembers.SingleOrDefault(tm => tm.Id == int.Parse((string)e.Value));
+        }
+    }
+
+    async Task LoadTeamMember()
+    {
+        Ctrs.Clear();
+        var result = await teamMemberOrchestrator.GetTeamMemberEvaluation(SelectedTeamMember.Id);
+        
+        foreach (var x in result.Value.RoleCompetencies)
+        {
+            Ctrs.Add(
+                new CompetencyTableRow()
+                    {
+                        AchievedDate = x.AchievedDate,
+                        Attribute = x.Attribute,
+                        CompetencyId = x.CompetencyId,
+                        EvaluatedBy = x.EvaluatedBy,
+                        KeyArea = x.KeyArea,
+                        Level = x.Level,
+                        Title = x.Title,
+                        Level1Description = x.Level1Description,
+                        Level2Description = x.Level2Description,
+                        Level3Description = x.Level3Description,
+                        Level4Description = x.Level4Description,
+                        Level5Description = x.Level5Description,
+                        Level6Description = x.Level6Description,
+                    //do this last
+                    IsDirty = false
+
+                    }
+            );
+        }
+     
+        Evaluation = result.Value;
+    }
+}
+

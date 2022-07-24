@@ -18,11 +18,13 @@ public class CompetencyOrchestrator : ICompetencyOrchestrator
 {
     private readonly IDataService<Competency> _competencyDataService;
     private readonly IUnitOfWork<IGrowthTrackerContext> _unitOfWork;
+    private readonly IExcelReader _excelReader;
 
-    public CompetencyOrchestrator(IDataService<Competency> competencyDataService, IUnitOfWork<IGrowthTrackerContext> unitOfWork)
+    public CompetencyOrchestrator(IDataService<Competency> competencyDataService, IUnitOfWork<IGrowthTrackerContext> unitOfWork, IExcelReader excelReader)
     {
         _competencyDataService = competencyDataService;
         _unitOfWork = unitOfWork;
+        _excelReader = excelReader;
     }
 
     public async Task<ItemResult<Competency>> AddCompetencyAsync(AddCompetencyDto dto)
@@ -51,8 +53,7 @@ public class CompetencyOrchestrator : ICompetencyOrchestrator
 
     public async Task<Result> LoadFromExcel()
     {
-        ExcelReader reader = new ExcelReader();
-        var results = reader.Read();
+        var results = _excelReader.ReadAllCompetencies();
 
         foreach(var result in results)
         {

@@ -12,6 +12,9 @@ public interface IGrowthTrackerContext : IDbContext, IWriteableDbContext
     IDbConnection? DbConnection { get; set; }
     DbSet<TeamMemberCompetency>? TeamMemberCompetencies { get; set; }
     DbSet<TeamMember>? TeamMembers { get; set; }
+
+    DbSet<RoleCompetency>? RoleCompetencies { get; set; }
+
 }
 
 public class GrowthTrackerContext : DbContext, IGrowthTrackerContext
@@ -20,6 +23,7 @@ public class GrowthTrackerContext : DbContext, IGrowthTrackerContext
     public DbSet<Competency>? Competencies { get; set; }
     public DbSet<TeamMemberCompetency>? TeamMemberCompetencies { get; set; }
     public DbSet<Role>? Roles { get; set; }
+    public DbSet<RoleCompetency>? RoleCompetencies { get; set; }
 
     public GrowthTrackerContext(DbContextOptions<GrowthTrackerContext> options) : base(options)
     {

@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>90a69af7-2153-470c-832d-6f5815333d38</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.21.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\GrowthTracker.BackEnd\GrowthTracker.BackEnd.csproj" />
+    <ProjectReference Include="..\IngenuityNow.Common\IngenuityNow.Common.csproj" />
+  </ItemGroup>
+
+</Project>
