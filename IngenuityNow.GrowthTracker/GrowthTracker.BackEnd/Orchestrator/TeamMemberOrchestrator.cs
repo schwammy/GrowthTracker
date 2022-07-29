@@ -4,6 +4,7 @@ using GrowthTracker.BackEnd.Model;
 using IngenuityNow.Common.Data;
 using IngenuityNow.Common.Data.DataService;
 using IngenuityNow.Common.Result;
+using Microsoft.EntityFrameworkCore;
 
 namespace GrowthTracker.BackEnd.Orchestrator;
 
@@ -14,6 +15,8 @@ public interface ITeamMemberOrchestrator
     Task<ListResult<TeamMemberCompetency>> GetCompetenciesForTeamMember(int id);
     Task<ListResult<TeamMemberListItemDto>> GetTeamMemberListItems();
     Task<ItemResult<GetTeamMemberEvaluationDto>> GetTeamMemberEvaluation(int teamMemberId);
+    Task<Result> SetTeamMemberCompetencyLevel(List<SetTeamMemberCompetencyLevelDto> dtos);
+    Task Test();
 }
 
 public class TeamMemberOrchestrator : ITeamMemberOrchestrator
@@ -24,6 +27,7 @@ public class TeamMemberOrchestrator : ITeamMemberOrchestrator
     private readonly IDataService<Competency> _competencyDataService;
     private readonly IDataService<Role> _roleDataService;
     private readonly IUnitOfWork<IGrowthTrackerContext> _unitOfWork;
+    //private readonly IGrowthTrackerContext _growthTrackerContext;
 
     public TeamMemberOrchestrator(IDataService<TeamMember> teamMemberDataService, IUnitOfWork<IGrowthTrackerContext> unitOfWork, ITeamMemberCompetencyDataService teamMemberCompetencyDataService, IDataService<RoleCompetency> roleCompetencyDataService, IDataService<Competency> competencyDataService, IDataService<Role> roleDataService)
     {
@@ -34,6 +38,7 @@ public class TeamMemberOrchestrator : ITeamMemberOrchestrator
         _roleCompetencyDataService = roleCompetencyDataService;
         _competencyDataService = competencyDataService;
         _roleDataService = roleDataService;
+        //_growthTrackerContext = growthTrackerContext;
     }
 
     public async Task<ItemResult<AddTeamMemberDto>> AddTeamMemberAsync(AddTeamMemberDto dto)
@@ -55,11 +60,34 @@ public class TeamMemberOrchestrator : ITeamMemberOrchestrator
         competency.AchievedDate = dto.AchievedDate;
         competency.TeamMemberId = dto.TeamMemberId;
         competency.Level = dto.Level;
-        //competency.ObjectState = ObjectState.New;
-        //teamMember.Competencies.Add(competency);
+        teamMember.Competencies.Add(competency);
 
-        _teamMemberCompetencyDataService.Add(competency);
-        //_teamMemberDataService.Add(teamMember);
+        await _unitOfWork.SaveAllAsync();
+
+        return Result.Success();
+    }
+
+    public async Task<Result> SetTeamMemberCompetencyLevel(List<SetTeamMemberCompetencyLevelDto> dtos)
+    {
+        var teamMemberId = dtos.FirstOrDefault().TeamMemberId;
+
+        var teamMember = await _teamMemberDataService.ListIncluding(tm => tm.Competencies).SingleAsync(tm => tm.Id == teamMemberId);
+
+
+        foreach (var dto in dtos)
+        {
+            // first mark old 
+            teamMember.Competencies.Where(c => c.CompetencyId == dto.CompetencyId).ToList().ForEach(c => c.IsArchived = true);  
+
+            // now add new
+            var competency = new TeamMemberCompetency();
+            competency.EvaluatedById = dto.EvaluatedById;
+            competency.CompetencyId = dto.CompetencyId;
+            competency.AchievedDate = dto.AchievedDate;
+            competency.TeamMemberId = dto.TeamMemberId;
+            competency.Level = dto.Level;
+            teamMember.Competencies.Add(competency);
+        }
         await _unitOfWork.SaveAllAsync();
 
         return Result.Success();
@@ -106,32 +134,29 @@ public class TeamMemberOrchestrator : ITeamMemberOrchestrator
         var tmc = await _teamMemberCompetencyDataService.GetTeamMemberCompetenciesAsync(teamMemberId);
 
         // todo: need to filter by role
-        var rcs = await _roleCompetencyDataService.ListAsync();
-        var cs = await _competencyDataService.ListAsync();
+        var rcs = await _roleCompetencyDataService.ListIncluding(rc => rc.Competency).ToListAsync();
 
         var roleAndComps = from roleCompetency in rcs
-                           join competency in cs
-                           on roleCompetency.CompetencyId equals competency.Id
                            join memberLevelTable in tmc
                            on roleCompetency.CompetencyId equals memberLevelTable.CompetencyId into j
                            from memberLevel in j.DefaultIfEmpty()
-                           where roleCompetency.RoleId == 2
-                           //select new { RoleCompetency = roleCompetency, Competency = competency};
-                           select new { RoleCompetency = roleCompetency, Competency = competency, Level = memberLevel };
+                           where roleCompetency.RoleId == 2 
+                           && (memberLevel == null ? true : memberLevel.IsArchived == false)
+                           select new { RoleCompetency = roleCompetency, Level = memberLevel };
 
         foreach (var item in roleAndComps)
         {
             GetRoleCompetencyDto dto = new GetRoleCompetencyDto();
-            dto.KeyArea = item.Competency.KeyArea;
-            dto.Attribute = item.Competency.Attribute;
-            dto.Title = item.Competency.Title;
-            dto.CompetencyId = item.Competency.Id;
-            dto.Level1Description = item.Competency.Level1Description;
-            dto.Level2Description = item.Competency.Level2Description;
-            dto.Level3Description = item.Competency.Level3Description;
-            dto.Level4Description = item.Competency.Level4Description;
-            dto.Level5Description = item.Competency.Level5Description;
-            dto.Level6Description = item.Competency.Level6Description;
+            dto.KeyArea = item.RoleCompetency.Competency.KeyArea;
+            dto.Attribute = item.RoleCompetency.Competency.Attribute;
+            dto.Title = item.RoleCompetency.Competency.Title;
+            dto.CompetencyId = item.RoleCompetency.Competency.Id;
+            dto.Level1Description = item.RoleCompetency.Competency.Level1Description;
+            dto.Level2Description = item.RoleCompetency.Competency.Level2Description;
+            dto.Level3Description = item.RoleCompetency.Competency.Level3Description;
+            dto.Level4Description = item.RoleCompetency.Competency.Level4Description;
+            dto.Level5Description = item.RoleCompetency.Competency.Level5Description;
+            dto.Level6Description = item.RoleCompetency.Competency.Level6Description;
             
             
 
@@ -146,5 +171,34 @@ public class TeamMemberOrchestrator : ITeamMemberOrchestrator
         }
 
         return ItemResult<GetTeamMemberEvaluationDto>.Success(result);
+    }
+
+    public async Task Test()
+    {
+        //Parent p = new Parent { Name = "Dad" };
+        //p.Children.Add(new Child { Name = "Benny" });
+        //p.Children.Add(new Child { Name = "Sarah" });
+
+        //_growthTrackerContext.Parents.Add(p);
+        //await _growthTrackerContext.SaveChangesAsync();
+
+        //var teamMember = await _growthTrackerContext.TeamMembers.FindAsync(1);
+
+        //TeamMemberCompetency comp1 = new TeamMemberCompetency();
+        //comp1.EvaluatedById = 1;
+        //comp1.CompetencyId = 12;
+        //comp1.AchievedDate = DateTime.Now;
+        //comp1.Level = 21;
+
+        //TeamMemberCompetency comp2 = new TeamMemberCompetency();
+        //comp2.EvaluatedById = 1;
+        //comp2.CompetencyId = 13;
+        //comp2.AchievedDate = DateTime.Now;
+        //comp2.Level = 22;
+
+        //teamMember.Competencies.Add(comp1);
+        //teamMember.Competencies.Add(comp2);
+
+        //await _growthTrackerContext.SaveChangesAsync();
     }
 }

@@ -13,4 +13,6 @@ public class RoleCompetency : IntegerIdEntity
     public int ExpectedLevel4 { get; set; }
     public int ExpectedLevel5 { get; set; }
     public int ExpectedLevel6 { get; set; }
+
+    public Competency? Competency { get; set; }
 }

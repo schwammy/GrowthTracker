@@ -5,5 +5,6 @@
     [CompetencyId] INT NOT NULL, 
     [Level] INT NOT NULL, 
     [AchievedDate] DATETIME NOT NULL, 
-    [EvaluatedById] INT NOT NULL
+    [EvaluatedById] INT NOT NULL, 
+    [IsArchived] BIT NOT NULL DEFAULT '0'
 )

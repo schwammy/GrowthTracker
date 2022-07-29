@@ -15,6 +15,5 @@ public class TeamMember : IntegerIdEntity
     public int TeamId { get; set; }
     public int RoleId { get; set; }
 
-    [NotMapped]
     public List<TeamMemberCompetency> Competencies { get; private set; }
 }

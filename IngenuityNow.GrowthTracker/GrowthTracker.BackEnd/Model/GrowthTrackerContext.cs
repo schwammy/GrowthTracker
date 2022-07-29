@@ -14,7 +14,6 @@ public interface IGrowthTrackerContext : IDbContext, IWriteableDbContext
     DbSet<TeamMember>? TeamMembers { get; set; }
 
     DbSet<RoleCompetency>? RoleCompetencies { get; set; }
-
 }
 
 public class GrowthTrackerContext : DbContext, IGrowthTrackerContext
@@ -38,29 +37,6 @@ public class GrowthTrackerContext : DbContext, IGrowthTrackerContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-
-        modelBuilder.Entity<TeamMemberCompetency>()
-            .HasOne(c => c.EvaluatedBy)
-            .WithOne()
-            .HasForeignKey<TeamMemberCompetency>(c => c.EvaluatedById);
-
-        modelBuilder.Entity<TeamMemberCompetency>()
-            .HasOne(c => c.TeamMember)
-            .WithOne()
-            .HasForeignKey<TeamMemberCompetency>(c => c.TeamMemberId);
-
-
-    //    modelBuilder.Entity<TeamMember>()
-    //.HasMany(t => t.Competencies)
-    //.WithOne(c => c.TeamMember)
-    //.HasForeignKey(x => x.TeamMemberId);
-    
-
-    //    modelBuilder.Entity<TeamMember>()
-    //.HasMany(t => t.Competencies)
-    //.WithOne(c => c.EvaluatedBy)
-    //.HasForeignKey(x => x.EvaluatedById);
-
-
     }
+
 }

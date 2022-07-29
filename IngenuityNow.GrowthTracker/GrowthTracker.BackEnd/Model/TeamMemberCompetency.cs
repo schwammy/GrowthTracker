@@ -11,15 +11,11 @@ public class TeamMemberCompetency : IntegerIdEntity
     public DateTime AchievedDate { get; set; }
     public int TeamMemberId { get; set; }
     public int EvaluatedById { get; set; }
+    public bool IsArchived { get; set; }
 
-
-    [ForeignKey("CompetencyId")]
     public Competency? Competency { get; set; }
 
-    [ForeignKey("TeamMemberId")] 
     public TeamMember? TeamMember { get; set; }
     
-    [ForeignKey("EvaluatedById")]
-    public TeamMember? EvaluatedBy { get; set; }
 
 }

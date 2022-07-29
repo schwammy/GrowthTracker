@@ -25,6 +25,7 @@ choose a team member
 }
 
 <button type="submit" @onclick="LoadTeamMember">Submit</button>
+<button type="submit" @onclick="SaveChangesAsync">SaveChanges</button>
 
 @*    <div class="row mt-3">
         <div class="col-12">
@@ -82,18 +83,18 @@ choose a team member
 
     async Task SaveChangesAsync()
     {
-        foreach (var comp in Ctrs.Where(c => c.IsDirty))
-        {
-            await teamMemberOrchestrator.SetTeamMemberCompetencyLevel(new SetTeamMemberCompetencyLevelDto
-                {
-                    AchievedDate = DateTime.Now,
-                    CompetencyId = comp.CompetencyId,
-                    EvaluatedById = 1,
-                    Level = comp.Level,
-                    TeamMemberId = Evaluation.TeamMemberId
-                });
-            comp.IsDirty = false;
-        }
+        var items = Ctrs.Where(c => c.IsDirty).Select(comp => new SetTeamMemberCompetencyLevelDto
+            {
+                AchievedDate = DateTime.Now,
+                CompetencyId = comp.CompetencyId,
+                EvaluatedById = 1,
+                Level = comp.Level,
+                TeamMemberId = Evaluation.TeamMemberId
+            }).ToList();
+
+        await teamMemberOrchestrator.SetTeamMemberCompetencyLevel(items);
+
+        await LoadTeamMember();
     }
 
     protected override async Task OnInitializedAsync()

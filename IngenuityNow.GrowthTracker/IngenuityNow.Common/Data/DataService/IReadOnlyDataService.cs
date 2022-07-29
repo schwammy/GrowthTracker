@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query;
 
 namespace IngenuityNow.Common.Data.DataService
 {
@@ -22,19 +24,21 @@ namespace IngenuityNow.Common.Data.DataService
         /// </summary>
         /// <returns>a list of entities</returns>
         Task<List<TEntity>> ListAsync();
+
+        IIncludableQueryable<TEntity, TProperty> ListIncluding<TProperty>(Expression<Func<TEntity, TProperty>> propertySelector);
     }
 
     /// <summary>
     /// A simple data service for read-only data.
     /// </summary>
     /// <typeparam name="T">The entity type for the data service.</typeparam>
-    public class ReadOnlyDataService<T> : IReadOnlyDataService<T> where T : Entity
+    public class ReadOnlyDataService<TEntity> : IReadOnlyDataService<TEntity> where TEntity : Entity
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ReadOnlyDataService{T}"/> class.
         /// </summary>
         /// <param name="repository">The repository to use.</param>
-        public ReadOnlyDataService(IGenericReadOnlyRepository<T> repository)
+        public ReadOnlyDataService(IGenericReadOnlyRepository<TEntity> repository)
         {
             Repository = repository;
         }
@@ -42,18 +46,25 @@ namespace IngenuityNow.Common.Data.DataService
         /// <summary>
         /// The repository for this data service.
         /// </summary>
-        protected virtual IGenericReadOnlyRepository<T> Repository { get; private set; }
+        protected virtual IGenericReadOnlyRepository<TEntity> Repository { get; private set; }
 
         /// <inheritdoc />
-        public virtual async Task<T> GetAsync(params object[] keyValues)
+        public virtual async Task<TEntity> GetAsync(params object[] keyValues)
         {
             return await Repository.FindAsync(keyValues);
         }
 
         /// <inheritdoc />
-        public virtual async Task<List<T>> ListAsync()
+        public virtual async Task<List<TEntity>> ListAsync()
         {
             return await Repository.All.ToListAsync();
+        }
+
+        public virtual IIncludableQueryable<TEntity, TProperty> ListIncluding<TProperty>(Expression<Func<TEntity, TProperty>> propertySelector)
+        {
+            if (propertySelector == null)
+                throw new ArgumentNullException(nameof(propertySelector));
+            return Repository.AllIncluding(propertySelector);
         }
     }
 }

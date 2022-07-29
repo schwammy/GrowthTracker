@@ -18,6 +18,6 @@ public class TeamMemberCompetencyDataService : DataService<TeamMemberCompetency>
 
     public async Task<List<TeamMemberCompetency>> GetTeamMemberCompetenciesAsync(int teamMemberId)
     {
-        return await Repository.AllIncluding("Competency", "TeamMember", "EvaluatedBy").Where(x => x.TeamMemberId == teamMemberId).ToListAsync();
+        return await Repository.AllIncluding("Competency", "TeamMember").Where(x => x.TeamMemberId == teamMemberId).ToListAsync();
     }
 }

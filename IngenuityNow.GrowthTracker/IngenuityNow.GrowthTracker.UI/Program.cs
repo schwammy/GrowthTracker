@@ -14,7 +14,6 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddApplicationInsightsTelemetry();
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
-builder.Services.AddSingleton<WeatherForecastService>();
 
 builder.Services.AddDbContext<GrowthTrackerContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("GrowthTrackerConnection")));
 builder.Services.AddScoped<IUnitOfWork<IGrowthTrackerContext>, UnitOfWork<GrowthTrackerContext>>();

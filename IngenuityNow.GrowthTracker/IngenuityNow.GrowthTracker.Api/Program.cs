@@ -16,6 +16,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddDbContext<GrowthTrackerContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("GrowthTrackerConnection")));
+builder.Services.AddScoped<IGrowthTrackerContext, GrowthTrackerContext>();
 builder.Services.AddScoped<IUnitOfWork<IGrowthTrackerContext>, UnitOfWork<GrowthTrackerContext>>();
 builder.Services.AddScoped<ICompetencyOrchestrator, CompetencyOrchestrator>();
 builder.Services.AddScoped<IDataService<Competency>, DataService<Competency>>();
@@ -114,5 +115,9 @@ app.MapPost("/loadFromExcel", async (ICompetencyOrchestrator orchestrator) =>
 })
 .WithName("LoadFromExcel");
 
+app.MapPost("/test", async (ITeamMemberOrchestrator orchestrator) => {
+    await orchestrator.Test();
+})
+.WithName("Test");
 
 app.Run();
