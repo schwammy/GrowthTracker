@@ -11,4 +11,7 @@ public class Role : IntegerIdEntity
     public string Level4Title { get; set; }
     public string Level5Title { get; set; }
     public string Level6Title { get; set; }
+
+
+    public ICollection<RoleCompetency> RoleCompetencyLink { get; set; }
 }

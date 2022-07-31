@@ -24,6 +24,7 @@ builder.Services.AddScoped<IGenericRepository<Competency>, GenericRepository<Com
 builder.Services.AddScoped<IExcelReader, ExcelReader>();
 
 builder.Services.AddScoped<ITeamMemberOrchestrator, TeamMemberOrchestrator>();
+builder.Services.AddScoped<ITeamMemberDataService, TeamMemberDataService>();
 builder.Services.AddScoped<IDataService<TeamMember>, DataService<TeamMember>>();
 builder.Services.AddScoped<IGenericRepository<TeamMember>, GenericRepository<TeamMember, GrowthTrackerContext>>();
 

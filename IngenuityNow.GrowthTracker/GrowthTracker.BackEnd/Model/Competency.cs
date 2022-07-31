@@ -13,4 +13,6 @@ public class Competency : IntegerIdEntity
     public string Level4Description { get; set; }
     public string Level5Description { get; set; }
     public string Level6Description { get; set; }
+
+    public ICollection<RoleCompetency> RoleCompetencyLink { get; set; }
 }
