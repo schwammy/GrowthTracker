@@ -1,0 +1,59 @@
+﻿@page "/TeamMembers"
+@using global::GrowthTracker.BackEnd.Dto
+@using global::GrowthTracker.BackEnd.Orchestrator
+@inject ITeamMemberOrchestrator TeamMemberOrchestrator
+
+<NavLink class="nav-link" href="AddTeamMember">
+    <span class="oi oi-plus" aria-hidden="true">Add New</span>
+
+</NavLink>
+
+<h1>Team Member Info</h1>
+@if (TeamMemberList is null)
+{
+    <p><em>Loading... !</em></p>
+}
+else
+{
+    <table class="table">
+            <thead>
+                <tr>
+                    <th>Id</th>
+                    <th>Name</th>
+                    <th>Start Date</th>
+                    <th>Team</th>
+                    <th>Role</th>
+                </tr>
+            </thead>
+        <tbody>
+            @foreach(var member in TeamMemberList)
+                {
+            <tr>
+                <td>@member.Id</td>
+                <td>@member.FirstName @member.LastName</td>
+                <td>@member.StartDate</td>
+                <td>@member.Team</td>
+                <td>@member.Role</td>
+                <td>
+                    <a class="nav-link" href="EditTeamMember/@member.Id">
+                        <span class="oi oi-pencil" aria-hidden="true">Edit</span>
+                    </a>
+                    <a class="nav-link" href="Delete/@member.Id">
+                        <span class="oi oi-trash" aria-hidden="true">Delete</span>
+                    </a>
+                </td>
+            </tr>
+                }
+        </tbody>
+    </table>
+}
+@code {
+    List<GetTeamMemberDto> TeamMemberList;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var result =  await TeamMemberOrchestrator.GetTeamMembersAsync();
+
+        TeamMemberList = result.Values;
+    }
+}

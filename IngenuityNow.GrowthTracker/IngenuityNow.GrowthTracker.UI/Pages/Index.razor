@@ -76,8 +76,8 @@ choose a team member
 
 @code {
 
-    List<TeamMemberListItemDto> TeamMembers = new List<TeamMemberListItemDto>();
-    TeamMemberListItemDto SelectedTeamMember = null;
+    List<TeamMemberDropDownListItemDto> TeamMembers = new List<TeamMemberDropDownListItemDto>();
+    TeamMemberDropDownListItemDto SelectedTeamMember = null;
     GetTeamMemberEvaluationDto Evaluation = new GetTeamMemberEvaluationDto();
     List<CompetencyTableRow> Ctrs = new List<CompetencyTableRow>();
 
@@ -99,9 +99,9 @@ choose a team member
 
     protected override async Task OnInitializedAsync()
     {
-        var teamMemberResults = await teamMemberOrchestrator.GetTeamMemberListItems();
+        var teamMemberResults = await teamMemberOrchestrator.GetTeamMemberDropDownListItems();
         TeamMembers = teamMemberResults.Values;
-        TeamMembers.Insert(0, new TeamMemberListItemDto(-1, "Please choose"));
+        TeamMembers.Insert(0, new TeamMemberDropDownListItemDto(-1, "Please choose"));
     }
 
     void SelectedTeamMemberChanged(ChangeEventArgs e)

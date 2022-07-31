@@ -2,21 +2,10 @@
 
 namespace GrowthTracker.BackEnd.Dto;
 
-public class AddTeamMemberDto
+public class EditTeamMemberDto
 {
-    public AddTeamMemberDto()
-    {
-
-    }
-    public AddTeamMemberDto(string firstName, string lastName, DateTime startDate, int teamId, int roleId)
-    {
-        FirstName = firstName;
-        LastName = lastName;
-        StartDate = startDate;
-        TeamId = teamId;
-        RoleId = roleId;
-    }
-    
+    [Required]
+    public int Id { get; set; }
     [Required]
     public string? FirstName { get; set; }
     [Required]

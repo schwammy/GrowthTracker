@@ -13,9 +13,13 @@ public interface ITeamMemberOrchestrator
     Task<ItemResult<AddTeamMemberDto>> AddTeamMemberAsync(AddTeamMemberDto dto);
     Task<Result> SetTeamMemberCompetencyLevel(SetTeamMemberCompetencyLevelDto dto);
     Task<ListResult<TeamMemberCompetency>> GetCompetenciesForTeamMember(int id);
-    Task<ListResult<TeamMemberListItemDto>> GetTeamMemberListItems();
+    Task<ListResult<TeamMemberDropDownListItemDto>> GetTeamMemberDropDownListItems();
     Task<ItemResult<GetTeamMemberEvaluationDto>> GetTeamMemberEvaluation(int teamMemberId);
     Task<Result> SetTeamMemberCompetencyLevel(List<SetTeamMemberCompetencyLevelDto> dtos);
+    Task<ListResult<GetTeamMemberDto>> GetTeamMembersAsync();
+    Task<ItemResult<TeamMember>> GetTeamMember(int id);
+    Task<Result> UpdateTeamMemberAsync(EditTeamMemberDto dto);
+
 }
 
 public class TeamMemberOrchestrator : ITeamMemberOrchestrator
@@ -34,7 +38,7 @@ public class TeamMemberOrchestrator : ITeamMemberOrchestrator
 
     public async Task<ItemResult<AddTeamMemberDto>> AddTeamMemberAsync(AddTeamMemberDto dto)
     {
-        var teamMember = new TeamMember { FirstName = dto.FirstName, LastName = dto.LastName, RoleId = dto.RoleId, TeamId = dto.TeamId, StartDate = dto.StartDate };
+        var teamMember = new TeamMember { FirstName = dto.FirstName, LastName = dto.LastName, RoleId = dto.RoleId.Value, TeamId = dto.TeamId.Value, StartDate = dto.StartDate.Value };
         _teamMemberDataService.Add(teamMember);
         await _unitOfWork.SaveAllAsync();
 
@@ -98,11 +102,11 @@ public class TeamMemberOrchestrator : ITeamMemberOrchestrator
         return ListResult<TeamMemberCompetency>.Success(results);
     }
 
-    public async Task<ListResult<TeamMemberListItemDto>> GetTeamMemberListItems()
+    public async Task<ListResult<TeamMemberDropDownListItemDto>> GetTeamMemberDropDownListItems()
     {
         var all = await _teamMemberDataService.ListAsync();
-        var result = all.Select(a => new TeamMemberListItemDto(a.Id, $"{a.FirstName} {a.LastName}"));
-        return ListResult<TeamMemberListItemDto>.Success(result);
+        var result = all.Select(a => new TeamMemberDropDownListItemDto(a.Id, $"{a.FirstName} {a.LastName}"));
+        return ListResult<TeamMemberDropDownListItemDto>.Success(result);
     }
 
     public async Task<ItemResult<GetTeamMemberEvaluationDto>> GetTeamMemberEvaluation(int teamMemberId)
@@ -111,5 +115,36 @@ public class TeamMemberOrchestrator : ITeamMemberOrchestrator
 
 
         return ItemResult<GetTeamMemberEvaluationDto>.Success(eval);
+    }
+
+    public async Task<ListResult<GetTeamMemberDto>> GetTeamMembersAsync()
+    {
+        var all = await _teamMemberDataService.ListAsync();
+
+        var result = all.Select(a => new GetTeamMemberDto()
+        {
+            FirstName = a.FirstName,
+            LastName = a.LastName,
+            Id = a.Id,
+            Role = a.RoleId.ToString(),
+            Team = a.TeamId.ToString(),
+            StartDate = a.StartDate
+        });
+        
+        return ListResult<GetTeamMemberDto>.Success(result);
+    }
+
+    public async Task<Result> UpdateTeamMemberAsync(EditTeamMemberDto dto)
+    {
+        var tm = await _teamMemberDataService.GetAsync(dto.Id);
+        tm.FirstName = dto.FirstName;
+        tm.LastName = dto.LastName;
+        tm.RoleId = dto.RoleId.Value;
+        tm.TeamId = dto.TeamId.Value;
+        tm.StartDate = dto.StartDate.Value;
+
+        await _unitOfWork.SaveAllAsync();
+
+        return Result.Success();
     }
 }

@@ -115,9 +115,5 @@ app.MapPost("/loadFromExcel", async (ICompetencyOrchestrator orchestrator) =>
 })
 .WithName("LoadFromExcel");
 
-app.MapPost("/test", async (ITeamMemberOrchestrator orchestrator) => {
-    await orchestrator.Test();
-})
-.WithName("Test");
 
 app.Run();

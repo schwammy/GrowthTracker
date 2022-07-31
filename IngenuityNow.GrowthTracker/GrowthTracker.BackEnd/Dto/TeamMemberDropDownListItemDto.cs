@@ -1,7 +1,7 @@
 ﻿namespace GrowthTracker.BackEnd.Dto;
-public record TeamMemberListItemDto
+public record TeamMemberDropDownListItemDto
 {
-    public TeamMemberListItemDto(int id, string name)
+    public TeamMemberDropDownListItemDto(int id, string name)
     {
         Id = id;
         Name = name;

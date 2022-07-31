@@ -1,0 +1,79 @@
+﻿@page "/EditTeamMember/{Id}"
+@using global::GrowthTracker.BackEnd.Dto;
+@using global::GrowthTracker.BackEnd.Orchestrator
+
+@inject NavigationManager NavigationManager
+@inject ITeamMemberOrchestrator TeamMemberOrchestrator
+<h2>Edit Team Member</h2>
+<hr />
+
+<form>
+    <div class="row">
+        <div class="col-md-8">
+            <EditForm Model="@dto" OnValidSubmit="@UpdateTeamMember">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+                <div class="form-group">
+                    <label for="FirstName" class="control-label">First Name</label>
+                    <input form="FirstName" class="form-control" @bind="@dto.FirstName" />
+                </div>
+                <div class="form-group">
+                    <label for="LastName" class="control-label">Last Name</label>
+                    <input form="LastName" class="form-control" @bind="@dto.LastName" />
+                </div>
+                <!-- obviously this needs to be data driven-->
+                <div class="form-group">
+                    <label for="Team" class="control-label"></label>
+                    <select @bind="@dto.TeamId" class="form-control">
+                        <option value="">-Pick Team</option>
+                        <option value="1">Team A</option>
+                        <option value="2">Team B</option>
+                    </select>
+                </div>
+                <!-- obviously this needs to be data driven-->
+                <div class="form-group">
+                    <label for="Role" class="control-label"></label>
+                    <select @bind="@dto.RoleId" class="form-control">
+                        <option value="">-Pick Role</option>
+                        <option value="2">.NET Dev</option>
+                        <option value="1002">Dct Dev</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="StartDate" class="control-label">Start Date</label>
+                    <input form="StartDate" type="date" class="form-control" @bind="@dto.StartDate" />
+                </div>
+            <div class="form-group">
+                <input type="submit" class="btn btn-primary" value="Save" />
+                <input type="button" class="btn btn-primary" @onclick="@Cancel" value="Cancel" />
+            </div>
+            </EditForm>
+        </div>
+    </div>
+
+</form>
+
+@code {
+    [Parameter]
+    public string Id { get; set; }
+    EditTeamMemberDto dto = new EditTeamMemberDto();
+    protected override async Task OnInitializedAsync()
+    {
+        var tm = await Task.Run(() => TeamMemberOrchestrator.GetTeamMember(Convert.ToInt32(Id)));
+        dto.Id = tm.Value.Id;
+        dto.FirstName = tm.Value.FirstName;
+        dto.LastName = tm.Value.LastName;
+        dto.TeamId = tm.Value.TeamId;
+        dto.RoleId = tm.Value.RoleId;
+        dto.StartDate = tm.Value.StartDate;
+    }
+    protected async void UpdateTeamMember()
+    {
+        await TeamMemberOrchestrator.UpdateTeamMemberAsync(dto);
+        NavigationManager.NavigateTo("TeamMembers");
+    }
+    void Cancel()
+    {
+        NavigationManager.NavigateTo("TeamMembers");
+    }
+}
